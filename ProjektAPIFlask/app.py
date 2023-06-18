@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import pyodbc
 import clr
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -25,6 +26,30 @@ def home_page():
     cursor.execute('SELECT * FROM Adresy')
     adresy = cursor.fetchall()
     return render_template('home.html', adresy=adresy)
+
+@app.route('/rejestracja', methods=['GET', 'POST'])
+def rejestracja():
+    if request.method == 'POST':
+        login = request.form['Login']
+        email = request.form['Email']
+        haslo1 = request.form['Haslo1']
+        haslo2 = request.form['Haslo2']
+
+        imie = request.form['Imie']
+        nazwisko = request.form['Nazwisko']
+        data_urodzenia = datetime.strptime(request.form['Data urodzenia'], "%Y-%m-%d").strftime("%d.%m.%Y")
+        print(data_urodzenia)
+        numer_telefonu = request.form['Numer telefonu']
+
+        konto = f'{login};{haslo1};{email}'
+        dane = f'{imie};{nazwisko};{data_urodzenia};{numer_telefonu};{email}'
+        
+        # Wykonanie zapytania SQL
+        cursor = cnxn.cursor()
+        cursor.execute("INSERT INTO Konta (Dane, Konto) VALUES (CONVERT(DaneOsobowe, ?), CONVERT(Konto, ?))", (dane, konto))
+        cnxn.commit()
+        return 'Dodano konto!'
+    return render_template('rejestracja.html')
 
 # Dodawanie nowy adres
 @app.route('/dodaj_adres', methods=['GET', 'POST'])
