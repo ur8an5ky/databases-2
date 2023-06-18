@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block style %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/home.css')}}" />
+{% endblock %}
+{% block title %}
+    Dodawanie adresu
+{% endblock %}
+{% block content %}
+    <p></p>
+
+    <form action="/dodaj_adres" method="POST">
+        
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">ul. </span>
+            <input type="text" class="form-control" name="Ulica" id="Ulica" placeholder="Ulica" aria-label="Ulica" aria-describedby="basic-addon1">
+            <span class="input-group-text">&nbsp;</span>
+            <input type="text" class="form-control" name="Numer domu" id="Numer domu" placeholder="Numer domu" aria-label="Numer domu">
+            <!-- <span class="input-group-text">/</span>
+            <input type="text" class="form-control" id="Numer mieszkania" placeholder="Numer mieszkania" aria-label="Numer mieszkania"> -->
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="Miasto" id="Miasto" placeholder="Miasto" aria-label="Miasto" aria-describedby="basic-addon1">
+            <span class="input-group-text">&nbsp;</span>
+            <input type="text" class="form-control" name="Kod pocztowy" id="Kod pocztowy" aria-label="Kod pocztowy" placeholder="Kod pocztowy" required pattern="[0-9]{2}-[0-9]{3}">
+        </div>
+        
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="Kraj" id="Kraj" placeholder="Kraj" aria-label="Kraj" aria-describedby="basic-addon1">
+        </div>
+        
+        <div>
+            <input type="submit" value="Dodaj Adres">
+        </div>
+    </form>
+
+{% endblock %}
+{% block actions %}
+{% endblock %}

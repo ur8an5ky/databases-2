@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block style %}
+{% endblock %}
+{% block title %}
+    Adresy
+{% endblock %}
+{% block content %}
+    <p></p>
+    <table class="table table-hover" style="background-color: #edeee4;">
+        <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Adres</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in adresy %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block actions %}
+{% endblock %}
