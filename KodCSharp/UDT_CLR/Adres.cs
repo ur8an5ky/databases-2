@@ -3,6 +3,7 @@ using System;
 using System.Data.SqlTypes;
 using System.Text;
 using System.IO;
+using System.Runtime.InteropServices;
 
 [Serializable]
 [SqlUserDefinedType(Format.UserDefined,
@@ -12,7 +13,6 @@ public struct Adres : INullable, IBinarySerialize
     private bool is_Null;
     private string _ulica;
     private Int32 _numerDomu;
-    private Int32 _numerMieszkania;
     private string _miasto;
     private string _kodPocztowy;
     private string _kraj;
@@ -36,57 +36,28 @@ public struct Adres : INullable, IBinarySerialize
             return "NULL";
         else
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("ul. ");
-            builder.Append(_ulica);
-            builder.Append(" ");
-            builder.Append(_numerDomu);
-            if (NumerMieszkania != -1)
-            {
-                builder.Append("/");
-                builder.Append(_numerMieszkania);
-            }
-            builder.Append(",");
-            builder.Append(_miasto);
-            builder.Append(" ");
-            builder.Append(_kodPocztowy);
-            builder.Append(",");
-            builder.Append(_kraj);
-            return builder.ToString();
+            return $"ul. {_ulica} {_numerDomu}, {_miasto} {_kodPocztowy}, {_kraj}";
         }
     }
     [SqlMethod(OnNullCall = false)]
     public static Adres Parse(SqlString s)
     {
         if (s.IsNull)
-            return Null;
+            throw new ArgumentNullException(nameof(s));
+
+        string[] parts = s.Value.Split(';');
+
+        if (parts.Length != 5)
+            throw new ArgumentException("Nieprawid³owy format napisu. Oczekiwano: 'ulica;numerDomu;miasto;kodPocztowy;kraj'");
+
         Adres ad = new Adres();
-        string[] xy = s.Value.Split(",".ToCharArray());
-        string ulicaOrazNumer = xy[0];
-        int ostatniaSpacja = ulicaOrazNumer.LastIndexOf(' ');
-        string numer = ulicaOrazNumer.Substring(ostatniaSpacja + 1);
-        ad.Ulica = ulicaOrazNumer.Substring(0, ostatniaSpacja).TrimEnd();
-        int domCzyMieszkanie = numer.IndexOf('/');
-        if (domCzyMieszkanie != -1)
-        {
-            ad.NumerDomu = Int32.Parse(numer.Substring(0, domCzyMieszkanie));
-            ad.NumerMieszkania = Int32.Parse(numer.Substring(domCzyMieszkanie + 1));
-        }
-        else
-        {
-            ad.NumerDomu = Int32.Parse(numer);
-            ad.NumerMieszkania = -1;
-        }
-
-        string kodOrazMiasto = xy[1].TrimStart();
-        int pierwszaSpacja = kodOrazMiasto.IndexOf(' ');
-        ad.KodPocztowy = kodOrazMiasto.Substring(0, pierwszaSpacja);
-        ad.Miasto = kodOrazMiasto.Substring(pierwszaSpacja + 1);
-
-        ad.Kraj = xy[2].TrimStart();
-
+        ad.Ulica = parts[0];
+        ad.NumerDomu = Int32.Parse(parts[1]);
+        ad.Miasto = parts[2];
+        ad.KodPocztowy = parts[3];
+        ad.Kraj = parts[4];
         if (!ad.SprawdzAdres())
-            throw new ArgumentException("Nieprawid³owy adres.");
+            throw new ArgumentException("Nieprawidlowy adres.");
         return ad;
     }
     public string Ulica
@@ -97,9 +68,9 @@ public struct Adres : INullable, IBinarySerialize
         {
             string temp = _ulica;
             _ulica = value;
-            if (!SprawdzAdres())
+            if (string.IsNullOrEmpty(_ulica))
             {
-                _ulica = temp; throw new ArgumentException("Z³a nazwa ulicy.");
+                _ulica = temp; throw new ArgumentException("Zla nazwa ulicy.");
             }
         }
     }
@@ -111,25 +82,10 @@ public struct Adres : INullable, IBinarySerialize
         {
             Int32 temp = _numerDomu;
             _numerDomu = value;
-            if (!SprawdzAdres())
+            if (_numerDomu <= 0)
             {
                 _numerDomu = temp;
-                throw new ArgumentException("Z³a wspó³rzêdna X.");
-            }
-        }
-    }
-    public Int32 NumerMieszkania
-    {
-        get
-        { return this._numerMieszkania; }
-        set
-        {
-            Int32 temp = _numerMieszkania;
-            _numerMieszkania = value;
-            if (!SprawdzAdres())
-            {
-                _numerMieszkania = temp;
-                throw new ArgumentException("Z³a wspó³rzêdna X.");
+                throw new ArgumentException("Zla wspolrzedna X.");
             }
         }
     }
@@ -141,9 +97,9 @@ public struct Adres : INullable, IBinarySerialize
         {
             string temp = _kodPocztowy;
             _kodPocztowy = value;
-            if (!SprawdzAdres())
+            if (string.IsNullOrEmpty(_kodPocztowy))
             {
-                _kodPocztowy = temp; throw new ArgumentException("Z³y kod pocztowy.");
+                _kodPocztowy = temp; throw new ArgumentException("Zly kod pocztowy.");
             }
         }
     }
@@ -155,9 +111,9 @@ public struct Adres : INullable, IBinarySerialize
         {
             string temp = _miasto;
             _miasto = value;
-            if (!SprawdzAdres())
+            if (string.IsNullOrEmpty(_miasto))
             {
-                _miasto = temp; throw new ArgumentException("Z³a nazwa miasta.");
+                _miasto = temp; throw new ArgumentException("Zla nazwa miasta.");
             }
         }
     }
@@ -169,17 +125,17 @@ public struct Adres : INullable, IBinarySerialize
         {
             string temp = _kraj;
             _kraj = value;
-            if (!SprawdzAdres())
+            if (string.IsNullOrEmpty(_kraj))
             {
-                _kraj = temp; throw new ArgumentException("Z³a nazwa kraju.");
+                _kraj = temp; throw new ArgumentException("Zla nazwa kraju.");
             }
         }
     }
     private bool SprawdzAdres()
     {
-        if ((string.IsNullOrEmpty(_ulica)) && (_numerDomu > 0) && (_numerMieszkania == -1 || _numerMieszkania > 0)
-                && (string.IsNullOrEmpty(_miasto)) && (string.IsNullOrEmpty(_kodPocztowy))
-                && (string.IsNullOrEmpty(_kraj)))
+        if ((!string.IsNullOrEmpty(_ulica)) && (_numerDomu > 0)
+                && (!string.IsNullOrEmpty(_miasto)) && (!string.IsNullOrEmpty(_kodPocztowy))
+                && (!string.IsNullOrEmpty(_kraj)))
         {
             return true;
         }
@@ -188,26 +144,22 @@ public struct Adres : INullable, IBinarySerialize
             return false;
         }
     }
-    public void Read(BinaryReader reader)
+    public void Read(BinaryReader r)
     {
-        // Deserializacja danych
-        is_Null = reader.ReadBoolean();
-        _ulica = reader.ReadString();
-        _numerDomu = reader.ReadInt32();
-        _numerMieszkania = reader.ReadInt32();
-        _miasto = reader.ReadString();
-        _kodPocztowy = reader.ReadString();
-        _kraj = reader.ReadString();
+        is_Null = r.ReadBoolean();
+        _ulica = r.ReadString();
+        _numerDomu = r.ReadInt32();
+        _miasto = r.ReadString();
+        _kodPocztowy = r.ReadString();
+        _kraj = r.ReadString();
     }
-    public void Write(BinaryWriter writer)
+    public void Write(BinaryWriter w)
     {
-        // Serializacja danych
-        writer.Write(is_Null);
-        writer.Write(_ulica);
-        writer.Write(_numerDomu);
-        writer.Write(_numerMieszkania);
-        writer.Write(_miasto);
-        writer.Write(_kodPocztowy);
-        writer.Write(_kraj);
+        w.Write(is_Null);
+        w.Write(_ulica);
+        w.Write(_numerDomu);
+        w.Write(_miasto);
+        w.Write(_kodPocztowy);
+        w.Write(_kraj);
     }
 }

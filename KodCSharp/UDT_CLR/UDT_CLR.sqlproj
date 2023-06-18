@@ -64,8 +64,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adres.cs" />
-    <Compile Include="Klient.cs" />
-    <Compile Include="KontoBankowe.cs" />
-    <Compile Include="NIP.cs" />
+    <Compile Include="DaneOsobowe.cs" />
+    <Compile Include="Konto.cs" />
+    <Compile Include="Produkt.cs" />
+    <Compile Include="Transakcja.cs" />
+    <Compile Include="Karta.cs" />
   </ItemGroup>
 </Project>

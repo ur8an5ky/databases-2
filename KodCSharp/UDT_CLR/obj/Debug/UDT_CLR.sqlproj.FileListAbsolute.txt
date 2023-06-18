@@ -2,9 +2,9 @@ D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\bin\Debug\UDT_CLR.dacpac
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\bin\Debug\UDT_CLR.dll
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\bin\Debug\UDT_CLR.pdb
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\UDT_CLR.sqlproj.AssemblyReference.cache
+D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\UDT_CLR.dll
+D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\UDT_CLR.pdb
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\Model.xml
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\refactor.xml
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\postdeploy.sql
 D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\predeploy.sql
-D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\UDT_CLR.dll
-D:\6semestr\BD2\databases-2\KodCSharp\UDT_CLR\obj\Debug\UDT_CLR.pdb

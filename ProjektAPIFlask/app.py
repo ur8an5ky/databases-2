@@ -1,49 +1,60 @@
 from flask import Flask, render_template, request
 import pyodbc
+import clr
 
 app = Flask(__name__)
 
 # Konfiguracja połączenia do bazy danych
-server = 'ADRES_SERWERA'
-database = 'NAZWA_BAZY_DANYCH'
-username = 'UZYTKOWNIK'
-password = 'HASLO'
-cnxn = pyodbc.connect(f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATABASE={database};UID={username};PWD={password}')
+server = 'LAPTOP-OSQFQF1M\SQLEXPRESS'
+database = 'UDT_CLR'
+# username = 'UZYTKOWNIK'
+# password = 'HASLO'
+cnxn = pyodbc.connect(f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATABASE={database};Trusted_Connection=yes')
 cursor = cnxn.cursor()
 
 # Ścieżka względna do pliku DLL
 dll_path = "..\\KodCSharp\\UDT_CLR\\bin\\Debug\\UDT_CLR.dll"
 
+# Ładowanie pliku DLL
+# clr.AddReference(dll_path)
+# from KodCHarp.UDT_CLR import Klient, Adres
+
 # Strona główna - wyświetlanie listy klientów
 @app.route('/')
-def index():
-    cursor.execute('SELECT * FROM Klienci')
-    klienci = cursor.fetchall()
-    return render_template('index.html', klienci=klienci)
+def home_page():
+    cursor.execute('SELECT * FROM Adresy')
+    adresy = cursor.fetchall()
+    return render_template('home.html', adresy=adresy)
 
-# Dodawanie nowego klienta
-@app.route('/dodaj', methods=['GET', 'POST'])
-def dodaj():
+# Dodawanie nowy adres
+@app.route('/dodaj_adres', methods=['GET', 'POST'])
+def dodaj_adres():
     if request.method == 'POST':
-        imie = request.form['imie']
-        nazwisko = request.form['nazwisko']
-        # Przygotowanie wartości typu UDT
-        klient_udt = f'Klient("{imie}", "{nazwisko}")'
+        ulica = request.form['Ulica']
+        numer_domu = request.form['Numer domu']
+        # numer_mieszkania = request.form['numer_mieszkania']
+        miasto = request.form['Miasto']
+        kod_pocztowy = request.form['Kod pocztowy']
+        kraj = request.form['Kraj']
+        # Tworzenie obiektu typu Adres w Pythonie
+        adres = f'ul. {ulica} {numer_domu}, {miasto} {kod_pocztowy}, {kraj}'
+        
         # Wykonanie zapytania SQL
-        cursor.execute(f'INSERT INTO Klienci (Dane) VALUES ({klient_udt})')
+        cursor = cnxn.cursor()
+        cursor.execute("INSERT INTO Adresy (Adres) VALUES (?)", adres)
         cnxn.commit()
-        return 'Dodano klienta!'
-    return render_template('dodaj.html')
+        return 'Dodano adres!'
+    return render_template('dodaj_adres.html')
 
-# Usuwanie klienta
-@app.route('/usun/<int:id>', methods=['GET', 'POST'])
-def usun(id):
+# Usuwanie adresu
+@app.route('/usun_adres/<int:id>', methods=['GET', 'POST'])
+def usun_adres(id):
     if request.method == 'POST':
         # Wykonanie zapytania SQL
-        cursor.execute(f'DELETE FROM Klienci WHERE ID={id}')
+        cursor.execute('DELETE FROM Adresy WHERE ID=?', id)
         cnxn.commit()
-        return 'Usunięto klienta!'
-    return render_template('usun.html', id=id)
+        return 'Usunięto adres!'
+    return render_template('usun_adres.html', id=id)
 
 if __name__ == '__main__':
     app.run(debug=True)
