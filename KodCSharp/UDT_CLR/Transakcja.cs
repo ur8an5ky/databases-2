@@ -33,7 +33,7 @@ public struct Transakcja: INullable, IBinarySerialize
             return "NULL";
         else
         {
-            return $"Zaplacono {_kwota} zl, {_dataTransakcji} r.";
+            return $"{_kwota};{_dataTransakcji}";
 
         }
     }

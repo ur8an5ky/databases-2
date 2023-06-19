@@ -36,7 +36,7 @@ public struct DaneOsobowe : INullable, IBinarySerialize
             return "NULL";
         else
         {
-            return $"{_imie} {_nazwisko}, {_dataUrodzenia}, tel.: {_numerTelefonu}, e-mail: {_adresEmail}";
+            return $"{_imie};{_nazwisko};{_dataUrodzenia};{_numerTelefonu};{_adresEmail}";
         }
     }
     [SqlMethod(OnNullCall = false)]

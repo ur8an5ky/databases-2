@@ -38,7 +38,7 @@ public struct Karta: INullable, IBinarySerialize
             return "NULL";
         else
         {
-            return $"{_imie} {_nazwisko}, nr {_numerKarty}, wazna do: {_dataWaznosci}, CVV: {_cvv}";
+            return $"{_imie};{_nazwisko};{_numerKarty};{_dataWaznosci};{_cvv}";
 
         }
     }

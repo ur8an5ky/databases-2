@@ -34,7 +34,7 @@ public struct Produkt : INullable, IBinarySerialize
             return "NULL";
         else
         {
-            return $"Producent: {_producent}, Model: {_model}, Cena: {_cena}, Dostêpnoœæ: {_dostepnosc}";
+            return $"{_producent};{_model};{_cena};{_dostepnosc}";
         }
     }
     [SqlMethod(OnNullCall = false)]

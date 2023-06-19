@@ -35,7 +35,7 @@ public struct Konto : INullable, IBinarySerialize
             return "NULL";
         else
         {
-            return $"login: {_login}, haslo: {_haslo}, e-mail: {_adresEmail}";
+            return $"{_login};{_haslo};{_adresEmail}";
         }
     }
     [SqlMethod(OnNullCall = false)]
