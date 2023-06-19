@@ -11,6 +11,8 @@
             <tr>
                 <th scope="col">Id</th>
                 <th scope="col">Produkt</th>
+                <th scope="col">Cena</th>
+                <th scope="col">Dostępność</th>
                 <th scope="col">Akcje</th>
             </tr>
         </thead>
@@ -18,7 +20,9 @@
             {% for item in produkty %}
                 <tr>
                     <td>{{ item[0] }}</td>
-                    <td>{{ item[1] }}</td>
+                    <td>Piłka {{ item[1][0] }} {{ item[1][1] }}</td>
+                    <td>{{ item[1][2] }} zł/szt</td>
+                    <td>{{ item[1][3] }}</td>
                     <td>
                         <form action="{{ url_for('dodaj_do_koszyka', produkt_id=item[0]) }}" method="POST">
                             <button type="submit" class="btn btn-primary">Dodaj do koszyka</button>

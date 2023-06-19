@@ -11,6 +11,7 @@
             <tr>
                 <th scope="col">Id</th>
                 <th scope="col">Produkt</th>
+                <th scope="col">Cena</th>
                 <th scope="col">Liczba artykułów</th>
                 <th scope="col">Akcje</th>
             </tr>
@@ -19,8 +20,10 @@
             {% for item in koszyk_produktow %}
                 <tr>
                     <td>{{ item[0] }}</td>
-                    <td>{{ item[1] }}</td>
+                    <td>Piłka {{ item[1][0] }} {{ item[1][1] }}</td>
+                    <td>{{ item[1][2]|replace('.', ',') }} zł/szt</td>
                     <td>{{ item[2] }}</td>
+
                     <td>
                         <form action="{{ url_for('zmien_liczbe', produkt_id=item[0]) }}" method="POST">
                             <button type="submit" name="submit_button" value="dodaj" class="btn btn-primary">Dodaj</button>
@@ -31,6 +34,7 @@
             {% endfor %}
         </tbody>
     </table>
+    <p>Cena całkowita: {{ cena|string|replace('.', ',') }} zł</p>
 {% endblock %}
 {% block actions %}
 {% endblock %}

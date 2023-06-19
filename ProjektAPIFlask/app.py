@@ -33,16 +33,27 @@ dll_path = "..\\KodCSharp\\UDT_CLR\\bin\\Debug\\UDT_CLR.dll"
 @app.route('/')
 def home_page():
     cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
-    produkty = cursor.fetchall()
+    produkty_krotki = cursor.fetchall()
+    produkty = [list(krotka) for krotka in produkty_krotki]
+    for pr in produkty:
+        pr[1] = pr[1].split(';')
+        print(pr[1])
+    # print(produkty)
+    # produkty = produkty_krotki.strip()
     return render_template('home.html', produkty=produkty)
 
 @app.route('/koszyk')
 def koszyk_page():
     cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
-    produkty = cursor.fetchall()
+    produkty_krotki = cursor.fetchall()
+    produkty = [list(krotka) for krotka in produkty_krotki]
+    cena = 0.0
+    for pr, k in zip(produkty, koszyk):
+        pr[1] = pr[1].split(';')
+        cena += float(pr[1][2].replace(',', '.'))*k[1]
+        print(cena)
     koszyk_produktow = [(item[0], item[1], koszyk[i][1]) for i, item in enumerate(produkty) if koszyk[i][0]]
-
-    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow)
+    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow, cena=cena)
 
 @app.route('/dodaj_do_koszyka/<int:produkt_id>', methods=['POST'])
 def dodaj_do_koszyka(produkt_id):
@@ -90,11 +101,18 @@ def rejestracja():
         imie = request.form['Imie']
         nazwisko = request.form['Nazwisko']
         data_urodzenia = datetime.strptime(request.form['Data urodzenia'], "%Y-%m-%d").strftime("%d.%m.%Y")
-        print(data_urodzenia)
+        # print(data_urodzenia)
         numer_telefonu = request.form['Numer telefonu']
+
+        ulica = request.form['Ulica']
+        numer_domu = request.form['Numer domu']
+        miasto = request.form['Miasto']
+        kod_pocztowy = request.form['Kod pocztowy']
+        kraj = request.form['Kraj']
 
         konto = f'{login};{haslo1};{email}'
         dane = f'{imie};{nazwisko};{data_urodzenia};{numer_telefonu};{email}'
+        adres = f'{ulica};{numer_domu};{miasto};{kod_pocztowy};{kraj}'
         
         # Wykonanie zapytania SQL
         cursor = cnxn.cursor()
@@ -102,11 +120,18 @@ def rejestracja():
         cnxn.commit()
         print('Dodano konto!')
         flash('Poprawnie zarejestrowano uzytkownika!', category = 'success')
+
+        cursor = cnxn.cursor()
+        cursor.execute("INSERT INTO Uzytkownicy (Dane, Adres) VALUES (CONVERT(DaneOsobowe, ?), CONVERT(Adres, ?))", (dane, adres))
+        cnxn.commit()
+        print('Dodano poprawny adres!')
+        flash('Poprawnie dodano adres!', category = 'success')
         return redirect(url_for('logowanie'))
     return render_template('rejestracja.html')
 
 @app.route('/logowanie', methods=['GET', 'POST'])
 def logowanie():
+    global logged_in_id, logged_in
     if request.method == 'POST':
         login = request.form['Login']
         haslo = request.form['Haslo']
@@ -149,10 +174,41 @@ def logowanie():
 
 @app.route('/wylogowywanie')
 def wylogowywanie():
+    global logged_in, logged_in_id
     logged_in = False
     logged_in_id = -1
     flash('Zostałeś pomyślnie wylogowany(a)!', category='info')
     return redirect(url_for('home_page'))
+
+@app.route('/dane')
+def dane():
+    global logged_in_id
+    cursor.execute(f'Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {logged_in_id}')
+    dane = cursor.fetchall()
+    cursor.execute(f"Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Adres as NVARCHAR(MAX)) FROM Uzytkownicy WHERE CAST(Dane as NVARCHAR(MAX)) = '{dane[0][1]}'")
+    adres = cursor.fetchall()
+
+    dane = [list(krotka) for krotka in dane]
+    dane[0][1] = dane[0][1].replace(" 00:00:00", "").split(';')
+    dane[0][2] = dane[0][2].split(';')
+    # print(dane)
+
+    adres = [list(krotka) for krotka in adres]
+    adres = adres[0][2].split(';')
+    # print(adres)
+    return render_template('dane.html', dane=dane, adres=adres)
+
+@app.route('/dodaj_karte')
+def dodaj_karte():
+    cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
+    produkty_krotki = cursor.fetchall()
+    produkty = [list(krotka) for krotka in produkty_krotki]
+    for pr in produkty:
+        pr[1] = pr[1].split(';')
+        print(pr[1])
+    # print(produkty)
+    # produkty = produkty_krotki.strip()
+    return render_template('home.html', produkty=produkty)
 
 # Dodawanie nowy adres
 # @app.route('/dodaj_adres', methods=['GET', 'POST'])
@@ -177,12 +233,12 @@ def wylogowywanie():
 # # Usuwanie adresu
 # @app.route('/usun_adres/<int:id>', methods=['GET', 'POST'])
 # def usun_adres(id):
-    if request.method == 'POST':
-        # Wykonanie zapytania SQL
-        cursor.execute('DELETE FROM Adresy WHERE ID=?', id)
-        cnxn.commit()
-        return 'Usunięto adres!'
-    return render_template('usun_adres.html', id=id)
+#     if request.method == 'POST':
+#         # Wykonanie zapytania SQL
+#         cursor.execute('DELETE FROM Adresy WHERE ID=?', id)
+#         cnxn.commit()
+#         return 'Usunięto adres!'
+#     return render_template('usun_adres.html', id=id)
 
 if __name__ == '__main__':
     app.run(debug=True)
