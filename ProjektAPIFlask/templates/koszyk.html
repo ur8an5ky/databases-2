@@ -2,7 +2,7 @@
 {% block style %}
 {% endblock %}
 {% block title %}
-    Adresy
+    Koszyk
 {% endblock %}
 {% block content %}
     <p></p>
@@ -11,17 +11,20 @@
             <tr>
                 <th scope="col">Id</th>
                 <th scope="col">Produkt</th>
+                <th scope="col">Liczba artykułów</th>
                 <th scope="col">Akcje</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in produkty %}
+            {% for item in koszyk_produktow %}
                 <tr>
                     <td>{{ item[0] }}</td>
                     <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
                     <td>
-                        <form action="{{ url_for('dodaj_do_koszyka', produkt_id=item[0]) }}" method="POST">
-                            <button type="submit" class="btn btn-primary">Dodaj do koszyka</button>
+                        <form action="{{ url_for('zmien_liczbe', produkt_id=item[0]) }}" method="POST">
+                            <button type="submit" name="submit_button" value="dodaj" class="btn btn-primary">Dodaj</button>
+                            <button type="submit" name="submit_button" value="odejmij" class="btn btn-danger">Odejmij</button>
                         </form>
                     </td>
                 </tr>
