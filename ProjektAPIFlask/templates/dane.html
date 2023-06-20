@@ -26,6 +26,7 @@
                     <td>{{ item[1][2] }}</td>
                     <td>{{ item[1][4] }}</td>
                     <td>{{ item[1][3] }}</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -40,12 +41,31 @@
         <tbody>
             {% for item in adres %}
                 <tr>
-                    <td>ul. {{ item }}</td>
+                    <td>{{ item }}</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <a href="{{ url_for('dodaj_karte') }}" class="btn btn-primary">Dodaj kartę</a>
+    {% if kbool %}
+        <p></p>
+        <table class="table table-hover" style="background-color: #edeee4;">
+            <thead>
+                <tr>
+                    <th scope="col">Karta</th>
+                    <th scope="col">Ważność</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>**** **** **** {{ karta[0] }}</td>
+                        <td>{{ karta[1] }}</td>
+                    </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <a href="{{ url_for('dodaj_karte') }}" class="btn btn-primary">Dodaj kartę</a>
+    {% endif %}
 {% endblock %}
 {% block actions %}
 {% endblock %}

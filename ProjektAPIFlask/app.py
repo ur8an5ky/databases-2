@@ -166,7 +166,7 @@ def logowanie():
             logged_in = True
             logged_in_id = row[0]
             print(logged_in_id)
-            return redirect(url_for('logowanie'))
+            return redirect(url_for('dane'))
         else:
             flash('Podales nieprawidlowe dane!', category = 'danger')
 
@@ -187,28 +187,49 @@ def dane():
     dane = cursor.fetchall()
     cursor.execute(f"Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Adres as NVARCHAR(MAX)) FROM Uzytkownicy WHERE CAST(Dane as NVARCHAR(MAX)) = '{dane[0][1]}'")
     adres = cursor.fetchall()
+    print(dane[0][2])
+    cursor.execute(f"Select CAST(Karta as NVARCHAR(MAX)), CAST(Konto as NVARCHAR(MAX)) FROM Karty WHERE CAST(Konto as NVARCHAR(MAX)) = '{dane[0][2]}'")
+    karta = cursor.fetchall()
 
     dane = [list(krotka) for krotka in dane]
     dane[0][1] = dane[0][1].replace(" 00:00:00", "").split(';')
     dane[0][2] = dane[0][2].split(';')
-    # print(dane)
 
     adres = [list(krotka) for krotka in adres]
     adres = adres[0][2].split(';')
-    # print(adres)
-    return render_template('dane.html', dane=dane, adres=adres)
 
-@app.route('/dodaj_karte')
+    kbool = False
+    if karta:
+        kbool = True
+        karta = [list(krotka) for krotka in karta]
+        karta = karta[0][0].replace(" 00:00:00", "").split(';')
+        karta = [karta[2][-4:], karta[3].replace(".", "/")[-7:]]
+
+    return render_template('dane.html', dane=dane, adres=adres, karta=karta, kbool=kbool)
+
+@app.route('/dodaj_karte', methods=['GET', 'POST'])
 def dodaj_karte():
-    cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
-    produkty_krotki = cursor.fetchall()
-    produkty = [list(krotka) for krotka in produkty_krotki]
-    for pr in produkty:
-        pr[1] = pr[1].split(';')
-        print(pr[1])
-    # print(produkty)
-    # produkty = produkty_krotki.strip()
-    return render_template('home.html', produkty=produkty)
+    global logged_in_id
+    cursor = cnxn.cursor()
+    cursor.execute(f'Select CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {logged_in_id}')
+    konto = cursor.fetchall()[0][0]
+    if request.method == 'POST':
+        imie = request.form['Imie']
+        nazwisko = request.form['Nazwisko']
+        numer_karty = request.form['Numer karty']
+        data_waznosci = "01/" + request.form['Data waznosci']   # tylko miesiąc i rok
+        cvv = request.form['CVV']
+
+        karta = f'{imie};{nazwisko};{numer_karty};{data_waznosci};{cvv}'
+        print(karta)
+
+        cursor = cnxn.cursor()
+        cursor.execute("INSERT INTO Karty (Karta, Konto) VALUES (CONVERT(Karta, ?), CONVERT(Konto, ?))", (karta, konto))
+        cnxn.commit()
+        print('Dodano karte!')
+        flash('Poprawnie dodano dane karty!', category = 'success')
+        return redirect(url_for('dane'))
+    return render_template('dodaj_karte.html')
 
 # Dodawanie nowy adres
 # @app.route('/dodaj_adres', methods=['GET', 'POST'])
