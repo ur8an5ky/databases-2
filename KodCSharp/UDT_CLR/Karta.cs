@@ -57,7 +57,7 @@ public struct Karta: INullable, IBinarySerialize
         ka.Imie = parts[0];
         ka.Nazwisko = parts[1];
         ka.NumerKarty = parts[2];
-        ka.DataWaznosci = DateTime.ParseExact(parts[3], "MM/yyyy", CultureInfo.InvariantCulture);
+        ka.DataWaznosci = DateTime.ParseExact(parts[3], "dd/MM/yyyy", CultureInfo.InvariantCulture);
         ka.CVV = parts[4];
 
         if (!ka.SprawdzKarte())
@@ -113,7 +113,7 @@ public struct Karta: INullable, IBinarySerialize
         {
             DateTime temp = _dataWaznosci;
             _dataWaznosci = value;
-            if ((_dataWaznosci < DateTime.Today.AddYears(-5).Date) || (_dataWaznosci >= DateTime.Today.AddYears(4).Date))
+            if ((_dataWaznosci < DateTime.Today.AddYears(-5)) || (_dataWaznosci >= DateTime.Today.AddYears(4)))
             {
                 _dataWaznosci = temp;
                 throw new ArgumentException("Nieprawidlowa data waznosci.");
