@@ -22,7 +22,7 @@ def koszyk_page():
     cena = 0.0
     id_konta = 0
     if app.config['logged_in_id'] != -1:
-        dane, _, _ = selects(app.config['logged_in_id'])
+        dane, _, _ = selects()
         id_konta = dane[0][0]
     print(id_konta)
     for pr, k in zip(produkty, app.config['koszyk']):
@@ -33,7 +33,7 @@ def koszyk_page():
 
     karta = []
     if app.config['logged_in']:
-        _, _, karta = selects(app.config['logged_in_id'])
+        _, _, karta = selects()
         if karta:
             state = karta
         else:
@@ -130,6 +130,9 @@ def rejestracja():
         email = request.form['Email']
         haslo1 = request.form['Haslo1']
         haslo2 = request.form['Haslo2']
+        if haslo1 != haslo2:
+            flash('Hasła nie są identyczne!', category = 'danger')
+            return redirect(url_for('rejestracja'))
 
         imie = request.form['Imie']
         nazwisko = request.form['Nazwisko']
@@ -212,7 +215,7 @@ def wylogowywanie():
 
 @app.route('/dane')
 def dane():
-    dane, adres, karta = selects(app.config['logged_in_id'])
+    dane, adres, karta = selects()
 
     dane = [list(krotka) for krotka in dane]
     dane[0][1] = dane[0][1].replace(" 00:00:00", "").split(';')

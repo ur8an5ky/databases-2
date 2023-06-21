@@ -5,7 +5,7 @@ def ustaw_koszyk_default():
     for i in range(len(app.config['koszyk'])):
         app.config['koszyk'][i] = (False, 0)
 
-def selects(id):
+def selects():
     s = app.config['logged_in_id']
     cursor.execute(f'Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {s}')
     dane = cursor.fetchall()
