@@ -110,7 +110,7 @@
             <thead>
                 <tr>
                     <th scope="col">Karta</th>
-                    <th scope="col">Ważność</th>
+                    <th scope="col">Data ważności</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,20 +120,22 @@
                     </tr>
             </tbody>
         </table>
-        <p>ZAPŁAĆ</p>
+        <a href="{{ url_for('potwierdzenie', id_konta=id_konta, kwota=cena) }}" class="btn btn-primary">Zapłać</a>
     {% endif %}
-    <table class="table table-hover" style="background-color: #edeee4; display: none; width: 100%;" id="paymentTable">
-        <thead>
-            <tr>
-                <th scope="col" style="width: 33%;">Ostatnie 4 cyfry</th>
-                <th scope="col" style="width: 66%;">Data ważności</th>
-                <th scope="col" style="width: 100%;"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr id="paymentRow"></tr>
-        </tbody>
-    </table>
+        <table class="table table-hover" style="background-color: #edeee4; display: none;" id="paymentTable">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 50%;">Karta</th>
+                    <th scope="col" style="width: 100%;">Data ważności</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="paymentRow"></tr>
+            </tbody>
+        </table>
+        <div class="text-center">
+            <a href="{{ url_for('potwierdzenie', id_konta=id_konta, kwota=cena) }}" class="btn btn-primary" id="payButton" style="display: none;">Zapłać</a>
+        </div>
 {% endblock %}
 {% block actions %}
 
@@ -155,11 +157,13 @@
         paymentRow.innerHTML = `
             <td>**** **** **** ${ostatnieCyfry}</td>
             <td>${dataWaznosci}</td>
-            <td><button type="button" class="btn btn-primary">Potwierdź</button></td>
         `;
 
         var paymentTable = document.getElementById("paymentTable");
         paymentTable.style.display = "block";
+
+        var payButton = document.getElementById("payButton");
+        payButton.style.display = "block";
 
         form.style.display = "none";
     });

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import pyodbc
 import clr
-from datetime import datetime
+from datetime import datetime, date
 import re
 
 app = Flask(__name__)
@@ -35,6 +35,7 @@ dll_path = "..\\KodCSharp\\UDT_CLR\\bin\\Debug\\UDT_CLR.dll"
 def home_page():
     cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
     produkty_krotki = cursor.fetchall()
+    print(produkty_krotki)
     produkty = [list(krotka) for krotka in produkty_krotki]
     for pr in produkty:
         pr[1] = pr[1].split(';')
@@ -50,13 +51,18 @@ def koszyk_page():
     produkty_krotki = cursor.fetchall()
     produkty = [list(krotka) for krotka in produkty_krotki]
     cena = 0.0
+    id_konta = 0
+    if logged_in_id != -1:
+        dane, _, _ = fun(logged_in_id)
+        id_konta = dane[0][0]
+    print(id_konta)
     for pr, k in zip(produkty, koszyk):
         pr[1] = pr[1].split(';')
         cena += float(pr[1][2].replace(',', '.'))*k[1]
         print(cena)
     koszyk_produktow = [(item[0], item[1], koszyk[i][1]) for i, item in enumerate(produkty) if koszyk[i][0]]
 
-    owca = 0
+    karta = []
     if logged_in:
         _, _, karta = fun(logged_in_id)
         if karta:
@@ -84,8 +90,47 @@ def koszyk_page():
             if len(numer_karty) != 16 or len(cvv) != 3 or not sprawdz_forme_stringa(data_waznosci):
                 flash('Podales nieprawidlowe dane karty!', category = 'danger')
             else:
-                return redirect(url_for('logowanie'))
-    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow, cena=cena, state=state, num=1, karta=karta)
+                karta = [numer_karty, data_waznosci]
+                state = 1
+                # return redirect(url_for('logowanie'))
+    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow, cena=cena, state=state, num=1, karta=karta, id_konta=id_konta)
+
+
+@app.route('/koszyk/potwierdzenie/<int:id_konta>/<float:kwota>', methods=['GET', 'POST'])
+def potwierdzenie(id_konta, kwota):
+    global koszyk
+    today = date.today().strftime("%d.%m.%Y")
+    print(today, type(today))
+    print(id_konta, type(id_konta))
+    print(kwota, type(kwota))
+    kwota = str(kwota).replace('.', ',')
+
+    cursor = cnxn.cursor()
+    cursor.execute("INSERT INTO Transakcje (Transakcja, IdKonta) VALUES (CONVERT(Transakcja, ?), ?)", (f'{kwota};{today}', id_konta))
+    cnxn.commit()
+
+    ilosci = [k[1] for k in koszyk]
+    cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
+    produkty = cursor.fetchall()
+    string_na_listy = []
+    for produkt, ilosc in zip(produkty, ilosci):
+        sublist = produkt[1].split(';')  # Podział stringu na elementy oddzielone średnikiem
+        sublist[-1] = int(sublist[-1]) - ilosc  # Konwersja ostatniego elementu na int
+        string_na_listy.append(sublist)
+    print(string_na_listy)
+    listy_na_string = []
+    for sublist in string_na_listy:
+        joined_string = ';'.join(str(item) for item in sublist)
+        listy_na_string.append(joined_string)
+    print(listy_na_string)
+    for i in range(4):
+        cursor = cnxn.cursor()
+        cursor.execute("UPDATE Produkty SET Produkt = CONVERT(Produkt, ?) WHERE Id = ?", (listy_na_string[i],i+1))
+        cnxn.commit()
+
+    ustaw_koszyk_default(koszyk)
+    return render_template('potwierdzenie.html')
+
 
 @app.route('/dodaj_do_koszyka/<int:produkt_id>', methods=['POST'])
 def dodaj_do_koszyka(produkt_id):
@@ -218,13 +263,7 @@ def wylogowywanie():
 @app.route('/dane')
 def dane():
     global logged_in_id
-    # cursor.execute(f'Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {logged_in_id}')
-    # dane = cursor.fetchall()
-    # cursor.execute(f"Select Id, CAST(Dane as NVARCHAR(MAX)), CAST(Adres as NVARCHAR(MAX)) FROM Uzytkownicy WHERE CAST(Dane as NVARCHAR(MAX)) = '{dane[0][1]}'")
-    # adres = cursor.fetchall()
-    # print(dane[0][2])
-    # cursor.execute(f"Select CAST(Karta as NVARCHAR(MAX)), CAST(Konto as NVARCHAR(MAX)) FROM Karty WHERE CAST(Konto as NVARCHAR(MAX)) = '{dane[0][2]}'")
-    # karta = cursor.fetchall()
+
     dane, adres, karta = fun(logged_in_id)
 
     dane = [list(krotka) for krotka in dane]
@@ -245,24 +284,15 @@ def dodaj_karte(redirect_type):
     global logged_in_id
     print(logged_in_id)
     cursor = cnxn.cursor()
-    print(1)
     cursor.execute(f'Select CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {logged_in_id}')
-    print(2)
     konto = cursor.fetchall()[0][0]
-    print(3)
 
     if request.method == 'POST':
-        print(4)
         imie = request.form['Imie']
-        print(5)
         nazwisko = request.form['Nazwisko']
-        print(6)
         numer_karty = request.form['Numer karty']
-        print(7)
         data_waznosci = "01/" + request.form['Data waznosci']   # tylko miesiąc i rok
-        print(8)
         cvv = request.form['CVV']
-        print(9)
 
         karta = f'{imie};{nazwisko};{numer_karty};{data_waznosci};{cvv}'
         print(karta)
@@ -277,7 +307,7 @@ def dodaj_karte(redirect_type):
         elif redirect_type == 1:
             return redirect(url_for('koszyk_page'))
     return render_template('dodaj_karte.html', redirect_type=redirect_type)
-
+    
 # Dodawanie nowy adres
 # @app.route('/dodaj_adres', methods=['GET', 'POST'])
 # def dodaj_adres():
