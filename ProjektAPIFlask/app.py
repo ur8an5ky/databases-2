@@ -6,6 +6,8 @@ import re
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '2493b92811db16ce03a76959'
+app.jinja_env.filters['zip'] = zip
+app.jinja_env.filters['enumerate'] = enumerate
 
 # Konfiguracja połączenia do bazy danych
 server = 'LAPTOP-OSQFQF1M\SQLEXPRESS'
@@ -33,6 +35,7 @@ dll_path = "..\\KodCSharp\\UDT_CLR\\bin\\Debug\\UDT_CLR.dll"
 # Strona główna - wyświetlanie listy klientów
 @app.route('/')
 def home_page():
+    global logged_in
     cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
     produkty_krotki = cursor.fetchall()
     print(produkty_krotki)
@@ -42,7 +45,7 @@ def home_page():
         print(pr[1])
     # print(produkty)
     # produkty = produkty_krotki.strip()
-    return render_template('home.html', produkty=produkty)
+    return render_template('home.html', produkty=produkty, logged_in=logged_in)
 
 @app.route('/koszyk', methods=['GET', 'POST'])
 def koszyk_page():
@@ -93,20 +96,18 @@ def koszyk_page():
                 karta = [numer_karty, data_waznosci]
                 state = 1
                 # return redirect(url_for('logowanie'))
-    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow, cena=cena, state=state, num=1, karta=karta, id_konta=id_konta)
-
+    return render_template('koszyk.html', koszyk_produktow=koszyk_produktow, cena=cena, state=state, num=1, karta=karta, id_konta=id_konta, logged_in=logged_in)
 
 @app.route('/koszyk/potwierdzenie/<int:id_konta>/<float:kwota>', methods=['GET', 'POST'])
 def potwierdzenie(id_konta, kwota):
-    global koszyk
+    global koszyk, logged_in
     today = date.today().strftime("%d.%m.%Y")
-    print(today, type(today))
-    print(id_konta, type(id_konta))
-    print(kwota, type(kwota))
     kwota = str(kwota).replace('.', ',')
+    historia = f'{koszyk[0][1]}{koszyk[1][1]}{koszyk[2][1]}{koszyk[3][1]}'
+    print(historia)
 
     cursor = cnxn.cursor()
-    cursor.execute("INSERT INTO Transakcje (Transakcja, IdKonta) VALUES (CONVERT(Transakcja, ?), ?)", (f'{kwota};{today}', id_konta))
+    cursor.execute("INSERT INTO Transakcje (Transakcja, IdKonta, Historia) VALUES (CONVERT(Transakcja, ?), ?, ?)", (f'{kwota};{today}', id_konta, historia))
     cnxn.commit()
 
     ilosci = [k[1] for k in koszyk]
@@ -129,8 +130,7 @@ def potwierdzenie(id_konta, kwota):
         cnxn.commit()
 
     ustaw_koszyk_default(koszyk)
-    return render_template('potwierdzenie.html')
-
+    return render_template('potwierdzenie.html', logged_in=logged_in)
 
 @app.route('/dodaj_do_koszyka/<int:produkt_id>', methods=['POST'])
 def dodaj_do_koszyka(produkt_id):
@@ -170,6 +170,7 @@ def zmien_liczbe(produkt_id):
 
 @app.route('/rejestracja', methods=['GET', 'POST'])
 def rejestracja():
+    global logged_in
     if request.method == 'POST':
         login = request.form['Login']
         email = request.form['Email']
@@ -205,7 +206,7 @@ def rejestracja():
         print('Dodano poprawny adres!')
         flash('Poprawnie dodano adres!', category = 'success')
         return redirect(url_for('logowanie'))
-    return render_template('rejestracja.html')
+    return render_template('rejestracja.html', logged_in=logged_in)
 
 @app.route('/logowanie', methods=['GET', 'POST'])
 def logowanie():
@@ -248,7 +249,7 @@ def logowanie():
         else:
             flash('Podales nieprawidlowe dane!', category = 'danger')
 
-    return render_template('logowanie.html')
+    return render_template('logowanie.html', logged_in=logged_in)
 
 @app.route('/wylogowywanie')
 def wylogowywanie():
@@ -262,7 +263,7 @@ def wylogowywanie():
 
 @app.route('/dane')
 def dane():
-    global logged_in_id
+    global logged_in_id, logged_in
 
     dane, adres, karta = fun(logged_in_id)
 
@@ -273,15 +274,36 @@ def dane():
     adres = [list(krotka) for krotka in adres]
     adres = adres[0][2].split(';')
 
+    print(logged_in_id)
+    transakcje = []
+    zakupy = []
+    produkty = []
+    tbool = False
+    cursor.execute(f'Select CAST(Transakcja as NVARCHAR(MAX)), Historia FROM Transakcje WHERE IdKonta = {logged_in_id}')
+    transakcje = cursor.fetchall()
+    print(transakcje)
+    if transakcje:
+        zakupy = [transakcja[1] for transakcja in transakcje]
+        transakcje = [transakcja[0].split(';') for transakcja in transakcje]
+        tbool = True
+        print(transakcje)
+        cursor.execute('Select Id, CAST(Produkt as NVARCHAR(MAX)) FROM Produkty')
+        produkty_krotki = cursor.fetchall()
+        print(produkty_krotki)
+        produkty = [list(krotka) for krotka in produkty_krotki]
+        for pr in produkty:
+            pr[1] = pr[1].split(';')
+            print(pr[1])
+
     kbool = False
     if karta:
         kbool = True
 
-    return render_template('dane.html', dane=dane, adres=adres, karta=karta, kbool=kbool, num=0)
+    return render_template('dane.html', dane=dane, adres=adres, karta=karta, kbool=kbool, transakcje=transakcje, tbool=tbool, produkty=produkty, zakupy=zakupy, num=0, zip=zip, enumerate=enumerate, logged_in=logged_in)
 
 @app.route('/dodaj_karte/<int:redirect_type>', methods=['GET', 'POST'])
 def dodaj_karte(redirect_type):
-    global logged_in_id
+    global logged_in_id, logged_in
     print(logged_in_id)
     cursor = cnxn.cursor()
     cursor.execute(f'Select CAST(Konto as NVARCHAR(MAX)) FROM Konta WHERE Id = {logged_in_id}')
@@ -306,7 +328,7 @@ def dodaj_karte(redirect_type):
             return redirect(url_for('dane'))
         elif redirect_type == 1:
             return redirect(url_for('koszyk_page'))
-    return render_template('dodaj_karte.html', redirect_type=redirect_type)
+    return render_template('dodaj_karte.html', redirect_type=redirect_type, logged_in=logged_in)
     
 # Dodawanie nowy adres
 # @app.route('/dodaj_adres', methods=['GET', 'POST'])

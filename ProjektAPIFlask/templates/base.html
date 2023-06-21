@@ -24,28 +24,38 @@
           <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('home_page') }}" style="font-weight:500;">Start</a>
+                <a class="nav-link active" aria-current="page" href="{{ url_for('home_page') }}" style="font-weight:500;">Produkty</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('logowanie') }}" style="font-weight:500;">Logowanie</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('wylogowywanie') }}" style="font-weight:500;">Wylogowywanie</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('rejestracja') }}" style="font-weight:500;">Rejestracja</a>
-              </li>
+              {% if logged_in %}
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="{{ url_for('dane') }}" style="font-weight:500;">Moje dane</a>
+                </li>
+              {% endif %} 
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="{{ url_for('koszyk_page') }}" style="font-weight:500;">Koszyk</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="{{ url_for('dane') }}" style="font-weight:500;">Moje dane</a>
-              </li>
+
 
 
 
             </ul>
+            {% if logged_in %}
+              <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('wylogowywanie') }}" style="font-weight:500;">Wylogowywanie</a>
+                  </li>
+              </ul>            
+            {% else %}
+              <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('logowanie') }}" style="font-weight:500;">Logowanie</a>
+                  </li>
 
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('rejestracja') }}" style="font-weight:500;">Rejestracja</a>
+                  </li>
+              </ul>
+            {% endif %} 
             
 
           </div>

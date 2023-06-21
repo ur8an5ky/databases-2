@@ -48,6 +48,7 @@
     </table>
 
     {% if kbool %}
+        <p>DANE KARTY</p>
         <p></p>
         <table class="table table-hover" style="background-color: #edeee4;">
             <thead>
@@ -65,6 +66,33 @@
         </table>
     {% else %}
         <a href="{{ url_for('dodaj_karte', redirect_type=num) }}" class="btn btn-primary">Dodaj kartę</a>
+    {% endif %}
+
+        <p>HISTORIA ZAKUPÓW</p>
+    {% if tbool %}
+        <p></p>
+        <table class="table table-hover" style="background-color: #edeee4;">
+            <thead>
+                <tr>
+                    <th scope="col">Zakup z:</th>
+                    <th scope="col">Suma wydatków:</th>
+                    <th scope="col">Artykuły:</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transakcja, zakup in transakcje|zip(zakupy) %}
+                    <tr>
+                        <td>{{ transakcja[1] }}</td>
+                        <td>{{ transakcja[0] }}</td>
+                        <td>{% for produkt in produkty %}
+                                {% if zakup[loop.index0] != '0' %}
+                                    {{ produkt }} x{{zakup[loop.index0]}}
+                                {% endif %}
+                        {% endfor %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 {% endblock %}
 {% block actions %}
