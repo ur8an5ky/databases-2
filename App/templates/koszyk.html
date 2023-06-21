@@ -18,8 +18,8 @@
         </thead>
         <tbody>
             {% for item in koszyk_produktow %}
-                <tr>
-                    <td>{{ item[0] }}</td>
+                <tr height="150px">
+                    <td><img src="{{url_for('static', filename='images/'+item[0]|string+'.png')}}" alt="1" style="width: 7%; position: absolute; margin-left: -3.5%;"></td>
                     <td>Piłka {{ item[1][0] }} {{ item[1][1] }}</td>
                     <td>{{ item[1][2]|replace('.', ',') }} zł/szt</td>
                     <td>{{ item[2] }}</td>
@@ -34,15 +34,15 @@
             {% endfor %}
         </tbody>
     </table>
-    <p>Cena całkowita: {{ cena|string|replace('.', ',') }} zł</p>
+    <p class="fs-3 fw-semibold" style="color:#edeee4">Cena całkowita: {{ cena|string|replace('.', ',') }} zł</p>
     <p></p>
     {% if state == -1 %}
         <button type="button" class="btn btn-primary" id="showFormButton">Dodaj dane karty</button>
+        <p></p>
 
         <div class="container" id="paymentForm" style="display: none;">
             <div class="row">
                 <div class="col-md-6 offset-md-3">
-                    <h2>Payment Form</h2>
                     <form action="{{ url_for('koszyk_page') }}" method="POST">
                         <div class="form-group">
                             <label for="Imie">Imię</label>
@@ -73,11 +73,11 @@
         <a href="{{ url_for('dodaj_karte', redirect_type=num) }}" class="btn btn-primary">Dodaj kartę do konta</a>
 
         <button type="button" class="btn btn-primary" id="showFormButton">Zapłać kartą bez dodawania</button>
+        <p></p>
 
         <div class="container" id="paymentForm" style="display: none;">
             <div class="row">
                 <div class="col-md-6 offset-md-3">
-                    <h2>Payment Form</h2>
                     <form action="{{ url_for('koszyk_page') }}" method="POST">
                         <div class="form-group">
                             <label for="Imie">Imię</label>
@@ -99,14 +99,14 @@
                             <label for="CVV">CVV</label>
                             <input type="text" class="form-control" id="CVV" name="CVV" placeholder="Wpisz numer CVV" required pattern="[0-9]{3}">
                           </div>
-                          <button type="submit" class="btn btn-primary">Submit</button>
+                          <button type="submit" class="btn btn-primary">Potwierdź</button>
                         </form>
                       </div>
                     </div>
                   </div>
     {% else %}
         <p></p>
-        <table class="table table-hover" style="background-color: #edeee4;">
+        <table class="table table-hover offset-md-3" style="background-color: #edeee4;">
             <thead>
                 <tr>
                     <th scope="col">Karta</th>
@@ -125,8 +125,8 @@
         <table class="table table-hover" style="background-color: #edeee4; display: none;" id="paymentTable">
             <thead>
                 <tr>
-                    <th scope="col" style="width: 50%;">Karta</th>
-                    <th scope="col" style="width: 100%;">Data ważności</th>
+                    <th scope="col" style="width: 100%;">Karta</th>
+                    <th scope="col">Data ważności</th>
                 </tr>
             </thead>
             <tbody>
@@ -134,7 +134,7 @@
             </tbody>
         </table>
         <div class="text-center">
-            <a href="{{ url_for('potwierdzenie', id_konta=id_konta, kwota=cena) }}" class="btn btn-primary" id="payButton" style="display: none;">Zapłać</a>
+            <a href="{{ url_for('potwierdzenie', id_konta=id_konta, kwota=cena) }}" class="btn btn-primary" id="payButton" style="text-align: center;width: 25%;margin-left:37.5%;display: none;">Zapłać</a>
         </div>
 {% endblock %}
 {% block actions %}
@@ -163,7 +163,7 @@
         paymentTable.style.display = "block";
 
         var payButton = document.getElementById("payButton");
-        payButton.style.display = "block";
+        payButton.style.display = "flex";
 
         form.style.display = "none";
     });

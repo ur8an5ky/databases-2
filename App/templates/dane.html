@@ -48,7 +48,7 @@
     </table>
 
     {% if kbool %}
-        <p>DANE KARTY</p>
+        <p class="fs-3 fw-semibold" style="color:#edeee4">Dane karty:</p>
         <p></p>
         <table class="table table-hover" style="background-color: #edeee4;">
             <thead>
@@ -68,7 +68,7 @@
         <a href="{{ url_for('dodaj_karte', redirect_type=num) }}" class="btn btn-primary">Dodaj kartę</a>
     {% endif %}
 
-        <p>HISTORIA ZAKUPÓW</p>
+        <p class="fs-3 fw-semibold" style="color:#edeee4">Historia zakupów:</p>
     {% if tbool %}
         <p></p>
         <table class="table table-hover" style="background-color: #edeee4;">
@@ -86,7 +86,7 @@
                         <td>{{ transakcja[0] }}</td>
                         <td>{% for produkt in produkty %}
                                 {% if zakup[loop.index0] != '0' %}
-                                    {{ produkt }} x{{zakup[loop.index0]}}
+                                    {{ produkt }} x{{zakup[loop.index0]}}; 
                                 {% endif %}
                         {% endfor %}</td>
                     </tr>

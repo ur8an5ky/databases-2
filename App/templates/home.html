@@ -18,8 +18,8 @@
         </thead>
         <tbody>
             {% for item in produkty %}
-                <tr>
-                    <td>{{ item[0] }}</td>
+                <tr height="150px">
+                    <td><img src="{{url_for('static', filename='images/'+item[0]|string+'.png')}}" alt="1" style="width: 7%; position: absolute; margin-left: -3.5%;"></td>
                     <td>Piłka {{ item[1][0] }} {{ item[1][1] }}</td>
                     <td>{{ item[1][2] }} zł/szt</td>
                     <td>{{ item[1][3] }}</td>
