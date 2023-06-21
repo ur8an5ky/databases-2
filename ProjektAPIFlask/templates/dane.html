@@ -64,7 +64,7 @@
             </tbody>
         </table>
     {% else %}
-        <a href="{{ url_for('dodaj_karte') }}" class="btn btn-primary">Dodaj kartę</a>
+        <a href="{{ url_for('dodaj_karte', redirect_type=num) }}" class="btn btn-primary">Dodaj kartę</a>
     {% endif %}
 {% endblock %}
 {% block actions %}

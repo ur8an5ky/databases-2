@@ -35,6 +35,138 @@
         </tbody>
     </table>
     <p>Cena całkowita: {{ cena|string|replace('.', ',') }} zł</p>
+    <p></p>
+    {% if state == -1 %}
+        <button type="button" class="btn btn-primary" id="showFormButton">Dodaj dane karty</button>
+
+        <div class="container" id="paymentForm" style="display: none;">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <h2>Payment Form</h2>
+                    <form action="{{ url_for('koszyk_page') }}" method="POST">
+                        <div class="form-group">
+                            <label for="Imie">Imię</label>
+                            <input type="text" class="form-control"  id="Imie" name="Imie" placeholder="Imie" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="Nazwisko">Nazwisko</label>
+                            <input type="text" class="form-control"  id="Nazwisko" name="Nazwisko" placeholder="Nazwisko" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="Numer karty">Numer karty</label>
+                            <input type="text" class="form-control" id="Numer karty" name="Numer karty" placeholder="Wpisz numer karty" required pattern="[0-9]{16}">
+                          </div>
+                          <div class="form-group">
+                            <label for="Data waznosci">Data ważności</label>
+                            <input type="text" class="form-control" id="Data waznosci" name="Data waznosci" placeholder="MM/YYYY" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="CVV">CVV</label>
+                            <input type="text" class="form-control" id="CVV" name="CVV" placeholder="Wpisz numer CVV" required pattern="[0-9]{3}">
+                          </div>
+                          <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+    {% elif state == 0 %}
+        <a href="{{ url_for('dodaj_karte', redirect_type=num) }}" class="btn btn-primary">Dodaj kartę do konta</a>
+
+        <button type="button" class="btn btn-primary" id="showFormButton">Zapłać kartą bez dodawania</button>
+
+        <div class="container" id="paymentForm" style="display: none;">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <h2>Payment Form</h2>
+                    <form action="{{ url_for('koszyk_page') }}" method="POST">
+                        <div class="form-group">
+                            <label for="Imie">Imię</label>
+                            <input type="text" class="form-control"  id="Imie" name="Imie" placeholder="Imie" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="Nazwisko">Nazwisko</label>
+                            <input type="text" class="form-control"  id="Nazwisko" name="Nazwisko" placeholder="Nazwisko" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="Numer karty">Numer karty</label>
+                            <input type="text" class="form-control" id="Numer karty" name="Numer karty" placeholder="Wpisz numer karty" required pattern="[0-9]{16}">
+                          </div>
+                          <div class="form-group">
+                            <label for="Data waznosci">Data ważności</label>
+                            <input type="text" class="form-control" id="Data waznosci" name="Data waznosci" placeholder="MM/YYYY" required>
+                          </div>
+                          <div class="form-group">
+                            <label for="CVV">CVV</label>
+                            <input type="text" class="form-control" id="CVV" name="CVV" placeholder="Wpisz numer CVV" required pattern="[0-9]{3}">
+                          </div>
+                          <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+    {% else %}
+        <p></p>
+        <table class="table table-hover" style="background-color: #edeee4;">
+            <thead>
+                <tr>
+                    <th scope="col">Karta</th>
+                    <th scope="col">Ważność</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>**** **** **** {{ karta[0] }}</td>
+                        <td>{{ karta[1] }}</td>
+                    </tr>
+            </tbody>
+        </table>
+        <p>ZAPŁAĆ</p>
+    {% endif %}
+    <table class="table table-hover" style="background-color: #edeee4; display: none; width: 100%;" id="paymentTable">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 33%;">Ostatnie 4 cyfry</th>
+                <th scope="col" style="width: 66%;">Data ważności</th>
+                <th scope="col" style="width: 100%;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="paymentRow"></tr>
+        </tbody>
+    </table>
 {% endblock %}
 {% block actions %}
+
+<script>
+    document.getElementById("paymentForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        var form = event.target;
+        var formData = new FormData(form);
+        var formValues = Array.from(formData.entries()).reduce(function(obj, [key, value]) {
+            obj[key] = value;
+            return obj;
+        }, {});
+
+        var numerKarty = formValues["Numer karty"];
+        var ostatnieCyfry = numerKarty.substring(numerKarty.length - 4);
+        var dataWaznosci = formValues["Data waznosci"];
+
+        var paymentRow = document.getElementById("paymentRow");
+        paymentRow.innerHTML = `
+            <td>**** **** **** ${ostatnieCyfry}</td>
+            <td>${dataWaznosci}</td>
+            <td><button type="button" class="btn btn-primary">Potwierdź</button></td>
+        `;
+
+        var paymentTable = document.getElementById("paymentTable");
+        paymentTable.style.display = "block";
+
+        form.style.display = "none";
+    });
+
+    document.getElementById('showFormButton').addEventListener('click', function() {
+        document.getElementById('showFormButton').style.display = 'none';
+        document.getElementById('paymentForm').style.display = 'block';
+    });
+</script>
 {% endblock %}
